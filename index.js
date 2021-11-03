@@ -27,19 +27,19 @@ const mainMenu = () => {
             //  } else if ()
             switch (response.mainMenu) {
                 case "View all departments":
-                    db.query("SELECT * FROM department", (err, result) => {
+                    db.query("SELECT id AS 'Department ID', name AS 'Department Name' FROM department", (err, result) => {
                         err ? console.log(err) : console.table(result);
                         mainMenu();
                     });
                     break;
                 case "View all roles":
-                    db.query("SELECT * FROM role", (err, result) => {
+                    db.query("SELECT role.id AS 'Role ID', role.title AS 'Job Title', department.name AS 'Department', role.salary AS 'Salary' FROM role JOIN department ON role.department_id = department.id ORDER BY role.id", (err, result) => {
                         err ? console.log(err) : console.table(result);
                         mainMenu();
                     });
                     break;
                 case "View all employees":
-                    db.query("SELECT * FROM employee", (err, result) => {
+                    db.query("SELECT e.id AS 'Employee ID', e.first_name AS 'First Name', e.last_name AS 'Last Name', role.title AS 'Job Title', department.name AS 'Department', role.salary AS 'Salary', CONCAT(m.first_name, ' ', m.last_name) AS 'Manager' FROM employee e JOIN role ON role.id = e.role_id JOIN department ON role.department_id = department.id LEFT JOIN employee m ON m.id = e.manager_id ORDER BY e.id", (err, result) => {
                         err ? console.log(err) : console.table(result);
                         mainMenu();
                     });
