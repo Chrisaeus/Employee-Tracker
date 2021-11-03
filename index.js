@@ -134,7 +134,6 @@ const mainMenu = () => {
                                 .then(response => {
                                     db.query("SELECT * FROM role WHERE title = ?", response.role, (err, roleResponse) => {
                                         db.query("SELECT * FROM employee WHERE first_name = ? AND last_name = ?", [response.manager.split(" ")[0], response.manager.split(" ")[1]], (err, managerResponse) => {
-                                            console.log(managerResponse);
                                             db.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [response.firstname, response.lastname, roleResponse[0].id, managerResponse[0].id], (err, result) => {
                                                 err ? console.log(err) : console.log(`${response.firstname} ${response.lastname} added to Employees.`);
                                                 mainMenu();
@@ -147,9 +146,42 @@ const mainMenu = () => {
                     });
                     break;
                 case "Update an employee role":
-                    db.query("SELECT * FROM department", (err, result) => {
-                        console.log(result);
-                        mainMenu();
+                    db.query("SELECT * FROM employee", (err, employeeResult) => {
+                        let employeeChoices = [];
+                            for (let i = 0; i < employeeResult.length; i++) {
+                                let fullName = [employeeResult[i].first_name, employeeResult[i].last_name];
+                                employeeChoices.push(fullName.join(" "));
+                            }
+                        db.query("SELECT * FROM role", (err, roleResult) => {
+                            let roleChoices = [];
+                            for (let i = 1; i < roleResult.length; i++) {
+                                roleChoices.push(roleResult[i].title);
+                            }
+                            inquirer
+                                .prompt([
+                                    {
+                                        type: "list",
+                                        name: "employee",
+                                        message: "Which employee's role do you want to update?",
+                                        choices: employeeChoices
+                                    },
+                                    {
+                                        type: "list",
+                                        name: "role",
+                                        message: "Which role do you want to assign to the selected employee?",
+                                        choices: roleChoices
+                                    }
+                                ])
+                                .then(response => {
+                                    db.query("SELECT * FROM role WHERE title = ?", response.role, (err, roleResponse) => {
+                                        db.query("UPDATE employee SET role_id = ? WHERE first_name = ? AND last_name = ?", [roleResponse[0].id, response.employee.split(" ")[0], response.employee.split(" ")[1]], (err, employeeResponse) => {
+                                            err ? console.log(err) : console.log(`Updated ${response.employee.split(" ")[0]} ${response.employee.split(" ")[1]}'s role.`);
+                                            mainMenu();
+                                        });
+                                    });
+                                })
+                                .catch(err => console.log(err));
+                        });
                     });
                     break;
                 default:
