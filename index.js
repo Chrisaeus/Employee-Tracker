@@ -22,9 +22,6 @@ const mainMenu = () => {
             }
         )
         .then(response => {
-            //  if (response.mainMenu == "View all departments") {
-
-            //  } else if ()
             switch (response.mainMenu) {
                 case "View all departments":
                     db.query("SELECT id AS 'Department ID', name AS 'Department Name' FROM department", (err, result) => {
@@ -45,26 +42,113 @@ const mainMenu = () => {
                     });
                     break;
                 case "Add a department":
-                    db.query("", (err, result) => {
-
-                        mainMenu();
-                    });
+                    inquirer
+                        .prompt(
+                            {
+                                type: "input",
+                                name: "department",
+                                message: "What is the name of the department?"
+                            }
+                        )
+                        .then(response => {
+                            db.query("INSERT INTO department (name) VALUES (?)", response.department, (err, result) => {
+                                console.log(response.department + ` added to Departments.`);
+                                mainMenu();
+                            });
+                        })
+                        .catch(err => console.log(err));
                     break;
                 case "Add a role":
-                    db.query("", (err, result) => {
-
-                        mainMenu();
+                    db.query("SELECT * FROM department", (err, depResult) => {
+                        let depChoices = [];
+                        for (let i = 0; i < depResult.length; i++) {
+                            depChoices.push(depResult[i].name);
+                        }
+                        inquirer
+                            .prompt([
+                                {
+                                    type: "input",
+                                    name: "title",
+                                    message: "What is the name of the role?"
+                                },
+                                {
+                                    type: "input",
+                                    name: "salary",
+                                    message: "What is the salary of the role?"
+                                },
+                                {
+                                    type: "list",
+                                    name: "department",
+                                    message: "Which department does the role belong to?",
+                                    choices: depChoices,
+                                }
+                            ])
+                            .then(response => {
+                                db.query("SELECT * FROM department WHERE name = ?", response.department, (err, result) => {
+                                    db.query("INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)", [response.title, response.salary, result[0].id], (err, result) => {
+                                        err ? console.log(err) : console.log(`${response.title} added to Roles.`);
+                                        mainMenu();
+                                    });
+                                });
+                            })
+                            .catch(err => console.log(err));
                     });
                     break;
                 case "Add an employee":
-                    db.query("", (err, result) => {
-
-                        mainMenu();
+                    db.query("SELECT * FROM role", (err, roleResult) => {
+                        let roleChoices = [];
+                        for (let i = 1; i < roleResult.length; i++) {
+                            roleChoices.push(roleResult[i].title);
+                        }
+                        db.query("SELECT * FROM employee", (err, managerResult) => {
+                            let managerChoices = [];
+                            for (let i = 0; i < managerResult.length; i++) {
+                                let fullName = [managerResult[i].first_name, managerResult[i].last_name];
+                                managerChoices.push(fullName.join(" "));
+                            }
+                            inquirer
+                                .prompt([
+                                    {
+                                        type: "input",
+                                        name: "firstname",
+                                        message: "What is the employee's first name?"
+                                    },
+                                    {
+                                        type: "input",
+                                        name: "lastname",
+                                        message: "What is the employee's last name?"
+                                    },
+                                    {
+                                        type: "list",
+                                        name: "role",
+                                        message: "What is the employee's role?",
+                                        choices: roleChoices
+                                    },
+                                    {
+                                        type: "list",
+                                        name: "manager",
+                                        message: "Who is the employee's manager?",
+                                        choices: managerChoices
+                                    }
+                                ])
+                                .then(response => {
+                                    db.query("SELECT * FROM role WHERE title = ?", response.role, (err, roleResponse) => {
+                                        db.query("SELECT * FROM employee WHERE first_name = ? AND last_name = ?", [response.manager.split(" ")[0], response.manager.split(" ")[1]], (err, managerResponse) => {
+                                            console.log(managerResponse);
+                                            db.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)", [response.firstname, response.lastname, roleResponse[0].id, managerResponse[0].id], (err, result) => {
+                                                err ? console.log(err) : console.log(`${response.firstname} ${response.lastname} added to Employees.`);
+                                                mainMenu();
+                                            });
+                                        });
+                                    });
+                                })
+                                .catch(err => console.log(err));
+                        });
                     });
                     break;
                 case "Update an employee role":
-                    db.query("", (err, result) => {
-
+                    db.query("SELECT * FROM department", (err, result) => {
+                        console.log(result);
                         mainMenu();
                     });
                     break;
