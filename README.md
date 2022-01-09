@@ -62,6 +62,11 @@ Choosing to view departments, roles, or employees will render a table showing th
 "Update an employee role" will prompt the user to select an existing employee and then the new role for that employee.
 
 Users will be returned to the main menu after every completed action.  
+<br />
+
+#### Demonstration GIF - click for video link
+
+[![Employee Tracker Demo](<./assets/images/Employee Tracker.gif>)](https://watch.screencastify.com/v/bcfqr26HdtzUrVUajFQO)
 
 
 ---
